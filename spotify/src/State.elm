@@ -16,7 +16,9 @@ import Rest
 init : ( Model, Effects Action )
 init =
   ( { query = ""
+    , queryType = "artist"
     , answers = []
+    , currentPage = 1
     }
   , Effects.none
   )
@@ -30,12 +32,22 @@ update action model =
       , Effects.none
       )
 
+    QueryTypeChange newType ->
+      ( { model | queryType = newType }
+      , Rest.search model.query newType
+      )
+
     Query ->
       ( model
-      , Rest.search model.query
+      , Rest.search model.query model.queryType
       )
 
     RegisterAnswers maybeAnswers ->
-      ( { model | answers = (Maybe.withDefault [] maybeAnswers) }
+      ( { model | answers = (Maybe.withDefault [] maybeAnswers), currentPage = 1 }
+      , Effects.none
+      )
+
+    ChangePage page ->
+      ( { model | currentPage = page }
       , Effects.none
       )
